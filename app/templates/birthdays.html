@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Birthdays</h1>
+
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.js" type="text/javascript"></script>
+    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.css" rel="stylesheet" type="text/css" />
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12">
+                <table id="birthdayGrid"></table>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+        $(document).ready(function () {
+            var grid, renderer;
+             renderer = function (value, record, $cell, $displayEl, id) {
+                 var $editBtn = $('<i class="fa fa-pencil gj-cursor-pointer" data-key="' + id + '"></i>'),
+                     $updateBtn = $('<i class="fa fa-save gj-cursor-pointer" data-key="' + id + '"></i>').hide();
+                 $editBtn.on('click', function (e) {
+                     grid.edit($(this).data('key'));
+                     $editBtn.hide();
+                     $updateBtn.show();
+                 });
+                 $updateBtn.on('click', function (e) {
+                     grid.update($(this).data('key'));
+                     $editBtn.show();
+                     $updateBtn.hide();
+                 });
+                 $displayEl.append($editBtn).append($updateBtn);
+             }
+
+            grid = $('#birthdayGrid').grid({
+                dataSource: '/birthdayList',
+                uiLibrary: 'bootstrap4',
+                primaryKey: 'birthdayid',
+                inlineEditing: { mode: 'command', managementColumn: false },
+                columns: [
+                    { field: 'birthdayid', title: 'Id', width: 110 },
+                    { field: 'birthday_name', title: 'Name', editor: false },
+                    { field: 'day', title: 'Day', editor: false},
+                    { field: 'age', title: 'Age', align: 'right', editor: true },
+                    { width: 56, align: 'center', renderer: renderer }
+                ]{#, pager: { limit: 50 }#}
+            });
+
+            grid.on('rowDataChanged', function (e, id, record) {
+                // Clone the record in new object where you can format the data to format that is supported by the backend.
+                var data = $.extend(true, {}, record);
+                // Format the date to format that is supported by the backend.
+                //data.DateOfBirth = gj.core.parseDate(record.DateOfBirth, 'mm/dd/yyyy').toISOString();
+                // Post the data to the server
+                $.ajax({ url: '/birthdaySave', data: { record: data }, method: 'POST' })
+                    .done(function() {
+                        alert('Birthday update successful.');
+                    })
+                    .fail(function () {
+                        alert('Failed to save.');
+                    });
+            });
+
+        });
+    </script>
+
+{% endblock %}
