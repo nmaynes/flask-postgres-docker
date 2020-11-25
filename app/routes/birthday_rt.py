@@ -4,24 +4,24 @@ import psycopg2
 import pandas as pd
 import appconfig as cfg
 
-city_rt = Blueprint('birthday', __name__, template_folder='templates')
+birthday_route = Blueprint('birthday', __name__, template_folder='templates')
 # Following code snippet queries the table for city
-@city_rt.route('/birthday', methods = ['GET'])
+@birthday_route.route('/birthday', methods = ['GET'])
 def city():
     return render_template('birthdays.html')
 
-@city_rt.route('/birthdayList', methods=['GET'])
-def cityList():
+@birthday_route.route('/birthdayList', methods=['GET'])
+def birthday_list():
 
     conn = None
-    birthdayResult = None
+    birthday_result = None
     try:
         conn = psycopg2.connect(host=cfg.postgres['host'], database=cfg.postgres['db'], user=cfg.postgres['user'], password=cfg.postgres['password'])
 
-        sqlCity = read_sql('birthday_list.sql', './sql/')
-        state_df = pd.read_sql(sqlCity, conn)
+        sql_birthday = read_sql('birthday_list.sql', './sql/')
+        state_df = pd.read_sql(sql_birthday, conn)
 
-        birthdayResult = '{ "records":' + state_df.to_json(orient='records') + ', "total":8}'
+        birthday_result = '{ "records":' + state_df.to_json(orient='records') + ', "total":8}'
 
         conn.close()
 
@@ -32,11 +32,11 @@ def cityList():
             conn.close()
             print('Database connection closed.')
 
-    return birthdayResult
+    return birthday_result
 
 
-@city_rt.route('/birthdaySave', methods = ['POST'])
-def citySave():
+@birthday_route.route('/birthdaySave', methods = ['POST'])
+def birthday_save():
 
     conn = None
     try:
@@ -45,12 +45,13 @@ def citySave():
         birthdayid = result['record[birthdayid]']
         age = result['record[age]']
 
-        sqlCityUpdate = read_sql('birthday_save.sql', './sql/')
+        sql_birthday_update = read_sql('birthday_save.sql', './sql/')
 
-        conn = psycopg2.connect(host=cfg.postgres['host'], database=cfg.postgres['db'], user=cfg.postgres['user'], password=cfg.postgres['password'])
+        conn = psycopg2.connect(host=cfg.postgres['host'], database=cfg.postgres['db'], user=cfg.postgres['user'],
+                                password=cfg.postgres['password'])
 
         cur = conn.cursor()
-        cur.execute(sqlCityUpdate, (age, birthdayid))
+        cur.execute(sql_birthday_update, (age, birthdayid))
         conn.commit()
 
         conn.close()

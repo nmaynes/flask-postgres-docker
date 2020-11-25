@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!--Reference examples from https://www.w3schools.com/bootstrap4/bootstrap_tables.asp-->
+<!--https://www.w3schools.com/html/html_tables.asp-->
+<div class="container-fluid">
+    <h1>Upcoming Birthdays</h1>
+    <table class="table table-striped">
+        <thead>
+            <th>Friend</th>
+            <th style="text-align: right;">Birthday</th>
+        </thead>
+        {% for birthday in data %}
+        <tr>
+            <td>{{ birthday.name }}</td>
+            <td align="right" id="store">{{ birthday.birthdate }}</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+    <button id="addBirthday" type="button" class="btn btn-secondary btn-lg btn-outline">Add Birthday</button>
+</div>
+
+{% endblock %}
