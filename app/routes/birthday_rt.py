@@ -4,9 +4,9 @@ import psycopg2
 import pandas as pd
 import appconfig as cfg
 
-birthday_route = Blueprint('birthday', __name__, template_folder='templates')
+birthday_route = Blueprint('birthdays', __name__, template_folder='templates')
 # Following code snippet queries the table for city
-@birthday_route.route('/birthday', methods = ['GET'])
+@birthday_route.route('/birthdays', methods = ['GET'])
 def city():
     return render_template('birthdays.html')
 
