@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <div class="row">
+        <h1>Pending Statuses</h1>
+    </div>
+    <div class="row">
+        <table class="table table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Status ID</th>
+                    <th scope="col">Status Text</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for status in data %}
+                <tr>
+                    <th scope="row">Status {{status.id}}</th>
+                    <td>{{status.status_text}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% for status in data %}
+{% endfor %}
+{% endblock %}}

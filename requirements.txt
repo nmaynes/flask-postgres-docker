@@ -1,6 +1,7 @@
 certifi==2020.6.20
 click==7.1.2
 Flask==1.1.2
+flask-wtf==0.14.3
 Flask-SQLAlchemy==2.4.4
 Flask-Migrate
 itsdangerous==1.1.0

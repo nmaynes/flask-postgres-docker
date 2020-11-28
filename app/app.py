@@ -2,21 +2,16 @@
 import os
 from flask import Flask
 import logging
-import appconfig as cfg
+import config as cfg
 from flask import Flask, request, render_template
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from database import db_session
-from routes.mainmenu_rt import mainmenu_rt
+from forms import EditStatusForm
+from models import Status
 
 
 app = Flask(__name__)
-
-app.register_blueprint(mainmenu_rt)
-
-
-# this is a very useful setting for automatically reloading html changes
-# https://stackoverflow.com/questions/9508667/reload-flask-app-when-template-file-changes
 
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://%s:%s@%s/%s' % (
@@ -30,33 +25,28 @@ MIGRATE = Migrate(app, db)
 logging.getLogger().setLevel(logging.INFO)
 
 
-class Friend(db.Model):
-    __tablename__ = 'friends'
-    id = db.Column(db.Integer, primary_key=True, unique=True)
-    name = db.Column(db.String(80), unique=False, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    birthday_id = db.Column(db.Integer, db.ForeignKey('birthdays.id'), nullable=False)
-    birthday = db.relationship("Birthday", backref=db.backref('friend', lazy=True))
 
-    def __repr__(self):
-        return '<Birthday %r>' % self.name
-
-class Birthday(db.Model):
-    __tablename__ = 'birthdays'
-    id = db.Column(db.Integer, primary_key=True)
-    birthdate = db.Column(db.Date, nullable=False)
-
-    def __repr__(self):
-        return '<Birthday %r>' % self.birthdate
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
 
-@app.route('/birthdays')
-def view_birthdays():
-    birthdays = Birthday.query.all()
-    return render_template('birthdays.html', data=birthdays)
+
+@app.route('/')
+def index():
+    statuses = Status.query.all()
+    return render_template('index.html', data=statuses)
+
+@app.route('/status/<status_id>')
+def show_user(status_id):
+    status = Status.query.filter_by(id=status_id).first_or_404()
+    return render_template('show_status.html', status=status)
+
+@app.route('/editStatus/<status_id>')
+def edit_status(status_id):
+    form = EditStatusForm()
+    status = Status.query.filter_by(id=status_id).first_or_404()
+    return render_template('edit_status.html', status=status, form=form)
 
 if __name__ == '__main__':
-    app.run(host=cfg.appcfg['host'], debug=cfg.appcfg['debug'])
+    app.run(host='0.0.0.0', debug=True)
