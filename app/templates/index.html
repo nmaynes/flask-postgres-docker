@@ -15,7 +15,7 @@
             <tbody>
             {% for status in data %}
                 <tr>
-                    <th scope="row">Status {{status.id}}</th>
+                    <th scope="row"><a href="{{ url_for('edit_status', status_id=status.id) }}">Status {{status.id}}</a></th>
                     <td>{{status.status_text}}</td>
                 </tr>
             {% endfor %}

@@ -2,8 +2,8 @@
 import os
 from flask import Flask
 import logging
-import config as cfg
-from flask import Flask, request, render_template
+from config import Config
+from flask import Flask, request, render_template, flash
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from database import db_session
@@ -12,12 +12,8 @@ from models import Status
 
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://%s:%s@%s/%s' % (
-    # ARGS.dbuser, ARGS.dbpass, ARGS.dbhost, ARGS.dbname
-    os.environ['DBUSER'], os.environ['DBPASS'], os.environ['DBHOST'], os.environ['DBNAME']
-)
 
 db = SQLAlchemy(app)
 MIGRATE = Migrate(app, db)
@@ -42,11 +38,30 @@ def show_user(status_id):
     status = Status.query.filter_by(id=status_id).first_or_404()
     return render_template('show_status.html', status=status)
 
-@app.route('/editStatus/<status_id>')
+@app.route('/editStatus/<status_id>', methods=["GET", "POST"])
 def edit_status(status_id):
-    form = EditStatusForm()
+
     status = Status.query.filter_by(id=status_id).first_or_404()
+    form = EditStatusForm(obj=status)
+    if request.method == 'POST' and form.validate():
+        status.status_text = form.status_text.data
+        status.published = form.published.data
+        db.session.commit()
+        flash(f'Status {status_id} Updated')
+
     return render_template('edit_status.html', status=status, form=form)
+
+@app.route('/addStatus/')
+def add_status():
+    form = EditStatusForm(request.POST)
+    if request.method == 'POST' and form.validate():
+        status = Status()
+        status.status_text = form.status.data
+        status.published = form.published.data
+        status.save()
+        redirect('add_status')
+    return render_template('add_status.html', form=form)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
