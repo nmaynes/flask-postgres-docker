@@ -1,13 +1,13 @@
 # imports
 import os
-from flask import Flask
+from flask import Flask, url_for
 import logging
 from config import Config
-from flask import Flask, request, render_template, flash
+from flask import Flask, request, render_template, flash, redirect
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from database import db_session
-from forms import EditStatusForm
+from forms import EditStatusForm, AddStatusForm
 from models import Status
 
 
@@ -51,15 +51,20 @@ def edit_status(status_id):
 
     return render_template('edit_status.html', status=status, form=form)
 
-@app.route('/addStatus/')
+@app.route('/addStatus/', methods=['GET', 'POST'])
 def add_status():
-    form = EditStatusForm(request.POST)
-    if request.method == 'POST' and form.validate():
+    form = AddStatusForm(request.form)
+    if request.method == 'POST':
         status = Status()
-        status.status_text = form.status.data
+        status.status_text = form.status_text.data
+        print(form.published)
         status.published = form.published.data
-        status.save()
-        redirect('add_status')
+
+        db.session.add(status)
+        db.session.commit()
+        flash(f'Status {status.id} Saved')
+        return redirect(url_for(f'edit_status', status_id=status.id))
+
     return render_template('add_status.html', form=form)
 
 
